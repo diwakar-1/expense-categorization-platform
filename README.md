@@ -48,11 +48,22 @@ An intelligent, full-stack financial technology web application designed to auto
    - Export filtered transactions directly to CSV.
    - Fully containerized with Docker and Docker Compose.
 
+## 🚀 Deployment & Quick Start Guide
+
+### 🌐 Option 1: 1-Click Cloud Deployment (Render)
+
+Deploy this platform to the cloud instantly using Render:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/diwakar-1/expense-categorization-platform)
+
+1. Click the **Deploy to Render** button above (or open [Render Dashboard](https://dashboard.render.com)).
+2. Sign in with GitHub (`diwakar-1`).
+3. Render automatically detects [`render.yaml`](file:///c:/Users/Diwakar/Downloads/New%20folder/render.yaml) and configures the environment.
+4. Click **Apply** / **Create Web Service**. Your live URL will be active in ~2 minutes!
+
 ---
 
-## 🚀 Quick Start Guide
-
-### Option 1: Run Locally (Fastest)
+### 💻 Option 2: Run Locally (Fastest)
 
 1. Make sure Python 3.9+ is installed.
 2. Install dependencies:
