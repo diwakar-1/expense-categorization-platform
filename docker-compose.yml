@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  expense-platform:
+    build: .
+    container_name: expense_categorization_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExpenseAI • Automated Expense Categorization & Spending Analysis Platform</title>
+  <meta name="description" content="AI-powered bank statement parser, automated transaction categorizer, and financial analytics dashboard. Minor Project by Pratyush (B.Com) & Komalpreet Kaur (BCA) - PCTE.">
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <div class="brand-info">
+          <div class="brand-title-wrap">
+            <h1 class="brand-title">Expense<span>AI</span></h1>
+            <span class="badge-pill ml-badge"><i class="fa-solid fa-microchip"></i> ML Categorizer</span>
+          </div>
+          <p class="brand-subtitle">Automated Expense Categorization & Spending Analysis • PCTE Minor Project</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-quick-sample" class="btn btn-secondary" title="Load sample bank statements with one click">
+          <i class="fa-solid fa-bolt-lightning"></i> <span>Load Demo Data</span>
+        </button>
+        <button id="btn-open-upload" class="btn btn-secondary" title="Upload bank statement CSV/Excel">
+          <i class="fa-solid fa-cloud-arrow-up"></i> <span>Upload Statement</span>
+        </button>
+        <button id="btn-open-add" class="btn btn-primary" title="Add single transaction manually">
+          <i class="fa-solid fa-plus"></i> <span>Add Expense</span>
+        </button>
+        <button id="btn-open-budget" class="btn btn-icon" title="Configure Monthly Budgets">
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+        <button id="btn-open-about" class="btn btn-icon" title="Project Synopsis & Team Info">
+          <i class="fa-solid fa-circle-info"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    <!-- Quick Demo Notice Banner if empty -->
+    <div id="empty-state-banner" class="hero-welcome-card" style="display: none;">
+      <div class="welcome-content">
+        <div class="welcome-icon">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <h2>Welcome to the Expense Categorization Platform!</h2>
+          <p>Get started by uploading your own bank statement (CSV/Excel) or instantly populate the dashboard with realistic Indian UPI & Bank statements.</p>
+        </div>
+      </div>
+      <div class="welcome-buttons">
+        <button id="hero-load-demo" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-bolt"></i> Populate Demo Statements
+        </button>
+        <button id="hero-upload-file" class="btn btn-secondary btn-lg">
+          <i class="fa-solid fa-upload"></i> Upload CSV Statement
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Summary Grid -->
+    <section class="kpi-grid">
+      <!-- Total Income -->
+      <div class="kpi-card income-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Total Inflow / Income</span>
+          <div class="kpi-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-income">₹0.00</div>
+          <div class="kpi-badge positive"><i class="fa-solid fa-circle-check"></i> Salary & Credits</div>
+        </div>
+      </div>
+
+      <!-- Total Expenses -->
+      <div class="kpi-card expense-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Total Outflow / Spending</span>
+          <div class="kpi-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-expense">₹0.00</div>
+          <div class="kpi-badge negative"><i class="fa-solid fa-receipt"></i> Debits & Purchases</div>
+        </div>
+      </div>
+
+      <!-- Net Savings -->
+      <div class="kpi-card savings-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Net Surplus / Savings</span>
+          <div class="kpi-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-savings">₹0.00</div>
+          <div class="kpi-badge neutral" id="kpi-savings-rate">0% Savings Rate</div>
+        </div>
+      </div>
+
+      <!-- Total Transactions -->
+      <div class="kpi-card count-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Categorized Transactions</span>
+          <div class="kpi-icon"><i class="fa-solid fa-layer-group"></i></div>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-count">0</div>
+          <div class="kpi-badge active" id="kpi-top-category">Top: None</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Analytics Charts Section -->
+    <section class="charts-grid">
+      <!-- Category Doughnut Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title"><i class="fa-solid fa-chart-pie"></i> Category Distribution</h3>
+            <p class="chart-subtitle">Spending breakdown across accounting heads</p>
+          </div>
+          <span class="badge-pill" id="category-count-badge">0 Categories</span>
+        </div>
+        <div class="chart-body doughnut-wrapper">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Monthly Trend Bar Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title"><i class="fa-solid fa-chart-column"></i> Inflow vs Outflow Velocity</h3>
+            <p class="chart-subtitle">Monthly cash flow and spending trend</p>
+          </div>
+          <div class="chart-legend-custom">
+            <span class="legend-dot income-dot"></span> Income
+            <span class="legend-dot expense-dot"></span> Expense
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Merchants Bar Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title"><i class="fa-solid fa-store"></i> Top Merchant Outflow</h3>
+            <p class="chart-subtitle">Where highest volume of funds are spent</p>
+          </div>
+          <span class="badge-pill">Top 6 Outlets</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="merchantChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Budget Guard Progress Section -->
+    <section class="budget-guard-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-shield-halved"></i> Category Budget Guardrails</h2>
+          <p class="section-subtitle">Real-time budget tracking with proactive threshold warnings (Pratyush's B.Com Financial Controls)</p>
+        </div>
+        <button id="btn-edit-budgets" class="btn btn-sm btn-secondary">
+          <i class="fa-solid fa-pen-to-square"></i> Adjust Budgets
+        </button>
+      </div>
+
+      <div id="budget-bars-container" class="budget-bars-grid">
+        <!-- Dynamically rendered -->
+      </div>
+    </section>
+
+    <!-- Transactions Data Table Section -->
+    <section class="transactions-section">
+      <div class="section-header table-header-flex">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-list-check"></i> Transaction Ledger & Categorization</h2>
+          <p class="section-subtitle">Cleaned merchant records with active-learning category reassignment</p>
+        </div>
+        <div class="table-actions">
+          <button id="btn-export-csv" class="btn btn-sm btn-secondary">
+            <i class="fa-solid fa-file-arrow-down"></i> Export CSV
+          </button>
+          <button id="btn-clear-all" class="btn btn-sm btn-danger-outline" title="Clear all data">
+            <i class="fa-solid fa-trash-can"></i> Clear All
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Controls Toolbar -->
+      <div class="filter-toolbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="filter-search" placeholder="Search merchant or narration (e.g. Swiggy, Uber, Electricity)...">
+        </div>
+
+        <div class="filter-controls">
+          <div class="select-wrapper">
+            <select id="filter-category">
+              <option value="All">All Categories</option>
+            </select>
+          </div>
+
+          <div class="select-wrapper">
+            <select id="filter-type">
+              <option value="ALL">All Types</option>
+              <option value="DEBIT">Debits (Expenses)</option>
+              <option value="CREDIT">Credits (Income)</option>
+            </select>
+          </div>
+
+          <div class="select-wrapper">
+            <select id="filter-account">
+              <option value="All">All Accounts / Statements</option>
+            </select>
+          </div>
+
+          <button id="btn-reset-filters" class="btn btn-sm btn-ghost" title="Reset all filters">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Ledger Table -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="data-table" id="transactions-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Clean Merchant</th>
+                <th>Raw Bank Narration</th>
+                <th>Category</th>
+                <th>Confidence</th>
+                <th>Amount</th>
+                <th>Account</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-tbody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+        <div id="table-empty-notice" class="table-empty-notice" style="display: none;">
+          <i class="fa-solid fa-folder-open"></i>
+          <p>No transactions match your search or filters.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-team">
+        <span><strong>Minor Project:</strong> Automated Expense Categorization & Spending Analysis Platform</span>
+        <span class="dot-separator">•</span>
+        <span><strong>Institution:</strong> Punjab College of Technical Education (PCTE)</span>
+        <span class="dot-separator">•</span>
+        <span><strong>Team:</strong> Pratyush (B.Com 3B) & Komalpreet Kaur (BCA 3B)</span>
+      </div>
+      <div class="footer-tech">
+        <span><i class="fa-brands fa-python"></i> FastAPI</span>
+        <span><i class="fa-solid fa-brain"></i> Scikit-Learn</span>
+        <span><i class="fa-solid fa-chart-simple"></i> Chart.js</span>
+        <span><i class="fa-brands fa-docker"></i> Docker</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL 1: Add Transaction Modal -->
+  <div id="modal-add-txn" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-circle-plus"></i> Add New Transaction</h3>
+        <button class="modal-close" data-close="modal-add-txn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-add-txn" class="modal-form">
+        <div class="form-group">
+          <label for="add-desc">Merchant / Description *</label>
+          <input type="text" id="add-desc" required placeholder="e.g. Swiggy Order, Uber Trip, Salary, Reliance Smart...">
+          <div id="add-ai-suggestion" class="ai-suggestion-chip" style="display: none;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> <span id="suggestion-text"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="add-amount">Amount (₹) *</label>
+            <input type="number" id="add-amount" step="0.01" min="0.01" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="add-type">Transaction Type</label>
+            <select id="add-type">
+              <option value="DEBIT">Debit (Expense)</option>
+              <option value="CREDIT">Credit (Income)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="add-date">Date *</label>
+            <input type="date" id="add-date" required>
+          </div>
+          <div class="form-group">
+            <label for="add-category">Category (Auto or Manual)</label>
+            <select id="add-category">
+              <option value="">🤖 Auto-Detect (AI Recommendation)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="add-account">Account / Payment Method</label>
+          <input type="text" id="add-account" placeholder="e.g. UPI, HDFC Debit, Cash, Credit Card" value="UPI / Wallet">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="modal-add-txn">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Upload Bank Statement Modal -->
+  <div id="modal-upload" class="modal-backdrop">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-invoice-dollar"></i> Upload Bank / UPI Statement</h3>
+        <button class="modal-close" data-close="modal-upload"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="dropzone" class="upload-dropzone">
+          <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+          <h4>Drag & Drop your Statement file here</h4>
+          <p>Supports <strong>.CSV</strong> and <strong>.XLSX</strong> formats (HDFC, SBI, ICICI, Axis, Paytm, PhonePe, etc.)</p>
+          <input type="file" id="file-input" accept=".csv, .xlsx, .xls" style="display: none;">
+          <button type="button" id="btn-browse-file" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-folder-open"></i> Browse File
+          </button>
+          <div id="file-selected-name" class="file-name-preview" style="display: none;"></div>
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="upload-account-label">Account Label</label>
+          <input type="text" id="upload-account-label" placeholder="e.g. HDFC Salary Acc, SBI UPI, ICICI Credit Card" value="Bank Statement">
+        </div>
+
+        <div class="sample-download-section">
+          <h5><i class="fa-solid fa-download"></i> Or Try Pre-built Realistic Sample Statements:</h5>
+          <div class="sample-buttons-row">
+            <button type="button" class="btn btn-sm btn-outline-info load-preset-btn" data-preset="hdfc">
+              <i class="fa-solid fa-building-columns"></i> HDFC Bank (UPI & Salary)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-info load-preset-btn" data-preset="sbi">
+              <i class="fa-solid fa-mobile-screen"></i> SBI UPI Passbook
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-info load-preset-btn" data-preset="icici">
+              <i class="fa-solid fa-credit-card"></i> ICICI Card Statement
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning load-preset-btn" data-preset="all">
+              <i class="fa-solid fa-cubes"></i> Load All 3 Statements
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modal-upload">Close</button>
+        <button type="button" id="btn-submit-upload" class="btn btn-primary" disabled>
+          <i class="fa-solid fa-play"></i> Process & Categorize Statement
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Budget Configuration Modal -->
+  <div id="modal-budget" class="modal-backdrop">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-sliders"></i> Monthly Category Budgets</h3>
+        <button class="modal-close" data-close="modal-budget"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Set spending ceiling per accounting category. Warnings trigger at 80% and 100% capacity.</p>
+        <div id="budget-inputs-list" class="budget-inputs-grid">
+          <!-- Dynamically populated category inputs -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modal-budget">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Project Synopsis & About Team Modal -->
+  <div id="modal-about" class="modal-backdrop">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-graduation-cap"></i> Minor Project Synopsis & Team</h3>
+        <button class="modal-close" data-close="modal-about"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body about-body">
+        <div class="college-badge">
+          <h3>PUNJAB COLLEGE OF TECHNICAL EDUCATION (PCTE)</h3>
+          <p>Interdisciplinary Minor Project • Bachelor of Computer Applications & Commerce</p>
+        </div>
+
+        <div class="team-cards-grid">
+          <div class="team-card">
+            <div class="team-avatar"><i class="fa-solid fa-code"></i></div>
+            <h4>Komalpreet Kaur</h4>
+            <span class="team-roll">Roll No: 2446597 (BCA 3B)</span>
+            <div class="team-role-tag">Technical Lead & Full-Stack Developer</div>
+            <p>Engineered full-stack architecture, ML text cleaning pipeline, SQLite schema, FastAPI endpoints, Chart.js integrations, and Docker containerization.</p>
+          </div>
+          <div class="team-card">
+            <div class="team-avatar"><i class="fa-solid fa-chart-line"></i></div>
+            <h4>Pratyush</h4>
+            <span class="team-roll">Roll No: 2446963 (B.Com 3B)</span>
+            <div class="team-role-tag">Financial Analyst & Quality Assurance</div>
+            <p>Formulated standard accounting heads, budget ratio guardrails, collected raw Indian banking & UPI statements, verified categorization accuracy, and authored synopsis.</p>
+          </div>
+        </div>
+
+        <div class="architecture-flow-box">
+          <h5><i class="fa-solid fa-diagram-project"></i> System Methodology Pipeline</h5>
+          <div class="pipeline-steps">
+            <div class="p-step"><span class="step-num">1</span> Upload Bank File / Form Entry</div>
+            <div class="p-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            <div class="p-step"><span class="step-num">2</span> Regex Text Cleaner & Strip UPI/Ref</div>
+            <div class="p-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            <div class="p-step"><span class="step-num">3</span> TF-IDF + Logistic Reg Categorizer</div>
+            <div class="p-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            <div class="p-step"><span class="step-num">4</span> Active User Memory & Chart.js Visuals</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-close="modal-about">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom JS Application Logic -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
